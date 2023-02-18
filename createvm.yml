@@ -1,0 +1,23 @@
+- hosts: proxmox
+  user: root
+  become: yes
+  vars_files:
+    - proxmox_vars.yml
+  tasks:
+  - name: Create virtual machine specs
+    ansible.builtin.shell: qm create {{ vm_id }} --name {{ vm_name }} --net0 virtio,bridge=vmbr0 --ostype l26 --memory 1024 --onboot yes --cpu host --cores 1 --sockets 1 --tag 121 --ide0 {{ local_storage }}:cloudinit --ipconfig0 ip={{ ip_addr }},gw={{ gateway }} --nameserver {{ dns_server }} --searchdomain romenson.local  --serial0 socket --vga serial0
+  - name: Import OS disk
+    ansible.builtin.shell: qm importdisk {{ vm_id }} {{ vm_image_path }}  {{ local_storage }}
+  - name: Configure VM disk
+    ansible.builtin.shell: qm set {{ vm_id }} --scsihw virtio-scsi-pci --scsi0 {{ local_storage }}:vm-{{ vm_id }}-disk-0,cache=writeback
+  - name: changing disk priority at boot
+    ansible.builtin.shell: qm set {{ vm_id }} --boot order=scsi0
+  - name: Set username and password to VM
+    ansible.builtin.shell: qm set {{ vm_id }} --cipassw {{ vm_pass }} --ciuser {{ vm_user }}
+  - name: Set disk size
+    ansible.builtin.shell: qm resize {{ vm_id }} scsi0 {{ disk_size }}G
+  - name: set ssh keys
+    ansible.builtin.shell: qm set {{ vm_id }} --sshkeys {{ ssh_keys_path }}
+  - name: start vm
+    ansible.builtin.shell: qm start {{ vm_id }}
+

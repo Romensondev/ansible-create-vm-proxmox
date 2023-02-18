@@ -1,0 +1,13 @@
+# vm specification
+vm_id:
+vm_name:
+vm_user:
+vm_pass:
+local_storage:
+disk_size:
+vm_image_path:
+ssh_keys_path:
+# vm network config
+ip_addr: #ipaddress+CDIR Example 1.1.1.2/24 
+gateway:
+dns_server:
